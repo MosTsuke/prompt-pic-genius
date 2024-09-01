@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { generateDescriptionAndKeywords } from '@/lib/openai';
 import { CopyIcon, CheckIcon } from 'lucide-react';
 
@@ -26,12 +26,14 @@ const Index = () => {
     try {
       const newContent = await Promise.all(images.map(async (image) => {
         const result = await generateDescriptionAndKeywords(image);
-        const wordCount = result.description.trim().split(/\s+/).length;
+        const description = result.description.slice(0, 200); // Limit to 200 characters
+        const wordCount = description.trim().split(/\s+/).length;
         return { 
           ...result, 
           id: image.id,
+          description,
           descriptionStats: {
-            characters: result.description.length,
+            characters: description.length,
             words: wordCount
           },
           keywords: result.keywords.slice(0, Math.max(40, result.keywords.length))
@@ -93,27 +95,18 @@ const Index = () => {
             <CardTitle>Generated Content</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Keywords</TableHead>
-                  <TableHead>Token Usage</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {generatedContent.map((content, index) => (
-                  <TableRow key={content.id}>
-                    <TableCell>
-                      <img 
-                        src={images.find(img => img.id === content.id).preview} 
-                        alt={`Preview ${index + 1}`} 
-                        className="w-24 h-24 object-cover rounded"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-2">
+            <div className="flex overflow-x-auto space-x-4">
+              {generatedContent.map((content, index) => (
+                <div key={content.id} className="flex-none w-96">
+                  <img 
+                    src={images.find(img => img.id === content.id).preview} 
+                    alt={`Preview ${index + 1}`} 
+                    className="w-full h-64 object-cover rounded mb-4"
+                  />
+                  <ScrollArea className="h-96 w-full rounded-md border p-4">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-semibold">Description</h3>
                         <p>{content.description}</p>
                         <p className="text-xs text-gray-500">
                           Characters: {content.descriptionStats.characters}, Words: {content.descriptionStats.words}
@@ -126,20 +119,16 @@ const Index = () => {
                           {content.descriptionCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
                         </Button>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-2">
+                      <div>
+                        <h3 className="font-semibold">Keywords</h3>
                         <div className="flex flex-wrap gap-1">
-                          {content.keywords.slice(0, 5).map((keyword, keywordIndex) => (
+                          {content.keywords.map((keyword, keywordIndex) => (
                             <span key={keywordIndex} className="bg-gray-200 rounded-full px-2 py-1 text-xs">
                               {keyword}
                             </span>
                           ))}
-                          {content.keywords.length > 5 && (
-                            <span className="text-xs text-gray-500">+{content.keywords.length - 5} more</span>
-                          )}
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 mt-2">
                           Keywords: {content.keywords.length}
                         </p>
                         <Button 
@@ -150,14 +139,15 @@ const Index = () => {
                           {content.keywordsCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
                         </Button>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <p>Tokens used: {content.tokenUsage}</p>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      <div>
+                        <h3 className="font-semibold">Token Usage</h3>
+                        <p>Tokens used: {content.tokenUsage}</p>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
