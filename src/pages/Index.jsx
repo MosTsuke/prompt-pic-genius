@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { generateDescriptionAndKeywords } from '@/lib/openai';
 import { CopyIcon, CheckIcon } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Index = () => {
   const [images, setImages] = useState([]);
@@ -100,68 +101,69 @@ const Index = () => {
             <CardTitle>Generated Content</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <ScrollArea className="h-[600px] w-full rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Image</TableHead>
+                    <TableHead className="w-[100px]">Image</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Keywords</TableHead>
-                    <TableHead>Token Usage</TableHead>
+                    <TableHead className="w-[100px]">Token Usage</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {generatedContent.map((content, index) => (
                     <TableRow key={content.id}>
-                      <TableCell>
+                      <TableCell className="p-2">
                         <img 
                           src={images.find(img => img.id === content.id).preview} 
                           alt={`Preview ${index + 1}`} 
-                          className="w-32 h-32 object-cover rounded"
+                          className="w-24 h-24 object-contain rounded"
                         />
                       </TableCell>
-                      <TableCell className="max-w-md">
-                        <p>{content.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                      <TableCell className="align-top">
+                        <div className="mb-2">{content.description}</div>
+                        <div className="text-xs text-gray-500">
                           Characters: {content.descriptionStats.characters}, Words: {content.descriptionStats.words}
-                        </p>
+                        </div>
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
                           onClick={() => copyToClipboard(content.description, content.id, 'description')}
                           className="mt-2"
                         >
-                          {content.descriptionCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                          {content.descriptionCopied ? <CheckIcon className="h-4 w-4 mr-2" /> : <CopyIcon className="h-4 w-4 mr-2" />}
+                          Copy
                         </Button>
                       </TableCell>
-                      <TableCell className="max-w-md">
-                        <div className="flex flex-wrap gap-1">
+                      <TableCell className="align-top">
+                        <div className="flex flex-wrap gap-1 mb-2">
                           {content.keywords.map((keyword, keywordIndex) => (
-                            <span key={keywordIndex} className="bg-gray-200 rounded-full px-2 py-1 text-xs">
+                            <span key={keywordIndex} className="bg-gray-100 text-gray-800 rounded-full px-2 py-1 text-xs">
                               {keyword}
                             </span>
                           ))}
                         </div>
-                        <p className="text-xs text-gray-500 mt-2">
+                        <div className="text-xs text-gray-500 mb-2">
                           Keywords: {content.keywords.length}
-                        </p>
+                        </div>
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           size="sm" 
                           onClick={() => copyToClipboard(content.keywords.join(', '), content.id, 'keywords')}
-                          className="mt-2"
                         >
-                          {content.keywordsCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                          {content.keywordsCopied ? <CheckIcon className="h-4 w-4 mr-2" /> : <CopyIcon className="h-4 w-4 mr-2" />}
+                          Copy
                         </Button>
                       </TableCell>
-                      <TableCell>
-                        <p>Tokens used: {content.tokenUsage}</p>
+                      <TableCell className="text-center">
+                        {content.tokenUsage}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </ScrollArea>
           </CardContent>
         </Card>
       )}
