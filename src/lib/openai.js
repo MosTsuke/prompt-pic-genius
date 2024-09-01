@@ -13,12 +13,18 @@ export const generateDescriptionAndKeywords = async (image) => {
     "resource-efficient", "low-carbon", "environmentally-conscious",
     "eco-design", "green-living", "sustainable-technology", "eco-solution",
     "green-energy", "clean-tech", "eco-aware", "planet-friendly", "green-initiative",
-    "sustainable-development", "eco-efficient", "environmentally-sustainable"
+    "sustainable-development", "eco-efficient", "environmentally-sustainable",
+    "circular-economy", "biodiversity", "carbon-neutral", "renewable-resources",
+    "eco-friendly-technology", "green-infrastructure", "sustainable-agriculture",
+    "clean-energy", "waste-reduction", "energy-efficiency", "green-transportation",
+    "eco-conscious", "environmental-protection", "sustainable-living", "green-innovation",
+    "eco-friendly-products", "renewable-energy-sources", "green-building", "eco-system-preservation",
+    "sustainable-design", "green-technology-solutions", "environmental-sustainability"
   ];
   
   return {
     description: `A ${Math.random() < 0.5 ? 'vibrant' : 'serene'} image showcasing ${Math.random() < 0.5 ? 'technology' : 'nature'}, perfect for illustrating modern sustainable solutions. This captivating visual representation highlights the intersection of innovation and environmental consciousness, demonstrating how cutting-edge advancements can harmoniously coexist with the natural world.`.slice(0, 300),
-    keywords: mockKeywords.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 10) + 40),
+    keywords: mockKeywords.sort(() => 0.5 - Math.random()).slice(0, 40), // Ensure at least 40 keywords
     tokenUsage: Math.floor(Math.random() * 100) + 50 // Mock token usage between 50 and 150
   };
 };
