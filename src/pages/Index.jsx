@@ -25,7 +25,16 @@ const Index = () => {
     try {
       const newContent = await Promise.all(images.map(async (image) => {
         const result = await generateDescriptionAndKeywords(image);
-        return { ...result, id: image.id };
+        const wordCount = result.description.trim().split(/\s+/).length;
+        return { 
+          ...result, 
+          id: image.id,
+          descriptionStats: {
+            characters: result.description.length,
+            words: wordCount
+          },
+          keywords: result.keywords.slice(0, Math.max(40, result.keywords.length))
+        };
       }));
       setGeneratedContent(newContent);
     } catch (error) {
@@ -93,6 +102,9 @@ const Index = () => {
                 </Button>
               </h3>
               <p>{content.description}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Characters: {content.descriptionStats.characters}, Words: {content.descriptionStats.words}
+              </p>
             </div>
 
             <div>
@@ -109,6 +121,9 @@ const Index = () => {
                   </span>
                 ))}
               </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Keywords: {content.keywords.length}
+              </p>
             </div>
 
             <div>
