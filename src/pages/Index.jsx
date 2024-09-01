@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,10 +12,10 @@ const Index = () => {
   const [generatedContent, setGeneratedContent] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleImagesUploaded = (newImages) => {
+  const handleImagesUploaded = useCallback((newImages) => {
     setImages(newImages);
     setGeneratedContent([]);
-  };
+  }, []);
 
   const handleGenerateContent = async () => {
     if (images.length === 0) {
@@ -91,7 +91,7 @@ const Index = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={handleGenerateContent} className="w-full" disabled={isGenerating}>
+      <Button onClick={handleGenerateContent} className="w-full" disabled={isGenerating || images.length === 0}>
         {isGenerating ? 'Generating...' : 'Generate Description and Keywords'}
       </Button>
 
@@ -116,9 +116,9 @@ const Index = () => {
                     <TableRow key={content.id}>
                       <TableCell className="p-2">
                         <img 
-                          src={images.find(img => img.id === content.id).preview} 
+                          src={images.find(img => img.id === content.id)?.preview} 
                           alt={`Preview ${index + 1}`} 
-                          className="w-24 h-24 object-contain rounded"
+                          className="w-24 h-24 object-cover rounded"
                         />
                       </TableCell>
                       <TableCell className="align-top">
