@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { generateDescriptionAndKeywords } from '@/lib/openai';
 import { CopyIcon, CheckIcon } from 'lucide-react';
 
@@ -26,7 +26,12 @@ const Index = () => {
     try {
       const newContent = await Promise.all(images.map(async (image) => {
         const result = await generateDescriptionAndKeywords(image);
-        const description = result.description.slice(0, 200); // Limit to 200 characters
+        let description = result.description;
+        if (description.length < 120) {
+          description = description.padEnd(120, ' ');
+        } else if (description.length > 200) {
+          description = description.slice(0, 197) + '...';
+        }
         const wordCount = description.trim().split(/\s+/).length;
         return { 
           ...result, 
@@ -36,7 +41,7 @@ const Index = () => {
             characters: description.length,
             words: wordCount
           },
-          keywords: result.keywords.slice(0, Math.max(40, result.keywords.length))
+          keywords: result.keywords
         };
       }));
       setGeneratedContent(newContent);
@@ -95,32 +100,41 @@ const Index = () => {
             <CardTitle>Generated Content</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex overflow-x-auto space-x-4">
-              {generatedContent.map((content, index) => (
-                <div key={content.id} className="flex-none w-96">
-                  <img 
-                    src={images.find(img => img.id === content.id).preview} 
-                    alt={`Preview ${index + 1}`} 
-                    className="w-full h-64 object-cover rounded mb-4"
-                  />
-                  <ScrollArea className="h-96 w-full rounded-md border p-4">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold">Description</h3>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Image</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Keywords</TableHead>
+                    <TableHead>Token Usage</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {generatedContent.map((content, index) => (
+                    <TableRow key={content.id}>
+                      <TableCell>
+                        <img 
+                          src={images.find(img => img.id === content.id).preview} 
+                          alt={`Preview ${index + 1}`} 
+                          className="w-32 h-32 object-cover rounded"
+                        />
+                      </TableCell>
+                      <TableCell className="max-w-md">
                         <p>{content.description}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 mt-1">
                           Characters: {content.descriptionStats.characters}, Words: {content.descriptionStats.words}
                         </p>
                         <Button 
                           variant="ghost" 
                           size="sm" 
                           onClick={() => copyToClipboard(content.description, content.id, 'description')}
+                          className="mt-2"
                         >
                           {content.descriptionCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
                         </Button>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Keywords</h3>
+                      </TableCell>
+                      <TableCell className="max-w-md">
                         <div className="flex flex-wrap gap-1">
                           {content.keywords.map((keyword, keywordIndex) => (
                             <span key={keywordIndex} className="bg-gray-200 rounded-full px-2 py-1 text-xs">
@@ -135,18 +149,18 @@ const Index = () => {
                           variant="ghost" 
                           size="sm" 
                           onClick={() => copyToClipboard(content.keywords.join(', '), content.id, 'keywords')}
+                          className="mt-2"
                         >
                           {content.keywordsCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
                         </Button>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Token Usage</h3>
+                      </TableCell>
+                      <TableCell>
                         <p>Tokens used: {content.tokenUsage}</p>
-                      </div>
-                    </div>
-                  </ScrollArea>
-                </div>
-              ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>
