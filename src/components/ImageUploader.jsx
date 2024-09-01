@@ -23,15 +23,23 @@ const ImageUploader = ({ onImagesUploaded }) => {
     onImagesUploaded(newImages);
   };
 
+  const handleClear = () => {
+    setImages([]);
+    onImagesUploaded([]);
+  };
+
   return (
     <div className="space-y-4">
-      <Input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleFileChange}
-        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
-      />
+      <div className="flex space-x-4">
+        <Input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+        />
+        <Button onClick={handleClear} variant="outline">Clear</Button>
+      </div>
       <div className="grid grid-cols-5 gap-4">
         {images.map((image, index) => (
           <Card key={index} className="p-2">

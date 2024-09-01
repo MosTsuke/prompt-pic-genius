@@ -110,6 +110,11 @@ const Index = () => {
                 ))}
               </div>
             </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">Token Usage</h3>
+              <p>Tokens used: {content.tokenUsage}</p>
+            </div>
           </CardContent>
         </Card>
       ))}
