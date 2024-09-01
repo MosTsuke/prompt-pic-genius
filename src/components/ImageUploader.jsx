@@ -14,6 +14,7 @@ const ImageUploader = ({ onImagesUploaded }) => {
     }
 
     const newImages = files.map(file => ({
+      id: Math.random().toString(36).substr(2, 9),
       file,
       preview: URL.createObjectURL(file)
     }));

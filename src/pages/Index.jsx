@@ -3,14 +3,16 @@ import ImageUploader from '@/components/ImageUploader';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateDescriptionAndKeywords } from '@/lib/openai';
+import { CopyIcon, CheckIcon } from 'lucide-react';
 
 const Index = () => {
   const [images, setImages] = useState([]);
-  const [description, setDescription] = useState('');
-  const [keywords, setKeywords] = useState([]);
+  const [generatedContent, setGeneratedContent] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleImagesUploaded = (newImages) => {
     setImages(newImages);
+    setGeneratedContent([]);
   };
 
   const handleGenerateContent = async () => {
@@ -19,13 +21,42 @@ const Index = () => {
       return;
     }
 
+    setIsGenerating(true);
     try {
-      const result = await generateDescriptionAndKeywords(images);
-      setDescription(result.description);
-      setKeywords(result.keywords);
+      const newContent = await Promise.all(images.map(async (image) => {
+        const result = await generateDescriptionAndKeywords(image);
+        return { ...result, id: image.id };
+      }));
+      setGeneratedContent(newContent);
     } catch (error) {
       console.error("Error generating content:", error);
       alert("An error occurred while generating content. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const copyToClipboard = async (text, id, type) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      const updatedContent = generatedContent.map(content => {
+        if (content.id === id) {
+          return { ...content, [`${type}Copied`]: true };
+        }
+        return content;
+      });
+      setGeneratedContent(updatedContent);
+      setTimeout(() => {
+        const resetContent = generatedContent.map(content => {
+          if (content.id === id) {
+            return { ...content, [`${type}Copied`]: false };
+        }
+          return content;
+        });
+        setGeneratedContent(resetContent);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
     }
   };
 
@@ -42,37 +73,46 @@ const Index = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={handleGenerateContent} className="w-full">
-        Generate Description and Keywords
+      <Button onClick={handleGenerateContent} className="w-full" disabled={isGenerating}>
+        {isGenerating ? 'Generating...' : 'Generate Description and Keywords'}
       </Button>
 
-      {description && (
-        <Card>
+      {generatedContent.map((content, index) => (
+        <Card key={content.id}>
           <CardHeader>
-            <CardTitle>Generated Description</CardTitle>
+            <CardTitle>Image {index + 1}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p>{description}</p>
-          </CardContent>
-        </Card>
-      )}
+          <CardContent className="space-y-4">
+            <img src={images.find(img => img.id === content.id).preview} alt={`Preview ${index + 1}`} className="w-full h-48 object-cover rounded" />
+            
+            <div>
+              <h3 className="font-semibold mb-2 flex justify-between items-center">
+                Description
+                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.description, content.id, 'description')}>
+                  {content.descriptionCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                </Button>
+              </h3>
+              <p>{content.description}</p>
+            </div>
 
-      {keywords.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Generated Keywords</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {keywords.map((keyword, index) => (
-                <span key={index} className="bg-gray-200 rounded-full px-3 py-1 text-sm">
-                  {keyword}
-                </span>
-              ))}
+            <div>
+              <h3 className="font-semibold mb-2 flex justify-between items-center">
+                Keywords
+                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.keywords.join(', '), content.id, 'keywords')}>
+                  {content.keywordsCopied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                </Button>
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {content.keywords.map((keyword, keywordIndex) => (
+                  <span key={keywordIndex} className="bg-gray-200 rounded-full px-3 py-1 text-sm">
+                    {keyword}
+                  </span>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
+      ))}
     </div>
   );
 };
