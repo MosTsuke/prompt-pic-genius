@@ -27,12 +27,7 @@ const Index = () => {
     try {
       const newContent = await Promise.all(images.map(async (image) => {
         const result = await generateDescriptionAndKeywords(image);
-        let description = result.description;
-        if (description.length < 120) {
-          description = description.padEnd(120, ' ');
-        } else if (description.length > 200) {
-          description = description.slice(0, 197) + '...';
-        }
+        const description = result.description;
         const wordCount = description.trim().split(/\s+/).length;
         return { 
           ...result, 
@@ -122,8 +117,8 @@ const Index = () => {
                         />
                       </TableCell>
                       <TableCell className="align-top">
-                        <div className="mb-2">{content.description}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="mb-2 max-h-48 overflow-y-auto">{content.description}</div>
+                        <div className="text-xs text-gray-500 mt-2">
                           Characters: {content.descriptionStats.characters}, Words: {content.descriptionStats.words}
                         </div>
                         <Button 
